@@ -1,0 +1,7 @@
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['otel-collector:8889', 'api-gw:8000', 'be1:8000', 'be2:8000', 'be3:8000', 'be4:8000']
