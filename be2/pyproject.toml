@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "be2"
+version = "0.1.0"
+description = ""
+authors = ["Eduard Badillo <eduard.badillo@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+opentelemetry-exporter-otlp = "^1.16.0"
+opentelemetry-api = "^1.16.0"
+opentelemetry-sdk = "^1.16.0"
+opentelemetry-instrumentation-fastapi = "^0.37b0"
+requests = "^2.28.2"
+fastapi = "0.90.1"
+prometheus-fastapi-instrumentator = "^5.9.1"
+opentelemetry-instrumentation-sqlalchemy = "^0.37b0"
+sqlalchemy = "^2.0.4"
+psycopg2 = "^2.9.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

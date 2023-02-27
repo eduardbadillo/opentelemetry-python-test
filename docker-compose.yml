@@ -1,0 +1,84 @@
+version: "3.9"
+services:
+  api-gw:
+    build: ./api-gw
+    command: /start-reload.sh
+    volumes:
+      - ./api-gw/start-reload.sh:/start-reload.sh
+      - ./api-gw/app:/app/app
+    env_file:
+      - ./api-gw/.env
+    ports:
+      - "8000:8000"
+
+  be1:
+    build: ./be1
+    command: /start-reload.sh
+    volumes:
+      - ./be1/start-reload.sh:/start-reload.sh
+    env_file:
+      - ./be1/.env
+
+  be2:
+    build: ./be2
+    command: /start-reload.sh
+    volumes:
+      - ./be2/start-reload.sh:/start-reload.sh
+    env_file:
+      - ./be2/.env
+
+  be3:
+    build: ./be3
+    command: /start-reload.sh
+    volumes:
+      - ./be3/start-reload.sh:/start-reload.sh
+    env_file:
+      - ./be3/.env
+
+  be4:
+    build: ./be4
+    command: /start-reload.sh
+    volumes:
+      - ./be4/start-reload.sh:/start-reload.sh
+    env_file:
+      - ./be4/.env
+
+  be5-consumer:
+    build: ./be5-consumer
+    restart: unless-stopped
+    command: 
+      - /bin/sh 
+      - -c 
+      - | 
+        /app/wait.sh rabbitmq:5672 
+        python /app/consumer.py
+
+  pgdb:
+    image: ghusta/postgres-world-db:2.10
+    # database : world-db
+    # user : world
+    # password : world123
+
+  rabbitmq:
+    image: bitnami/rabbitmq
+
+
+  otel-collector:
+    image: otel/opentelemetry-collector
+    command: [--config=/etc/otel-collector-config.yaml]
+    volumes:
+      - ./collector/config.yml:/etc/otel-collector-config.yaml
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.42
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - 16686:16686
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/config.yml:/etc/prometheus/prometheus.yml
