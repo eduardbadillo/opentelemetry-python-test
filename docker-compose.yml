@@ -45,13 +45,15 @@ services:
 
   be5-consumer:
     build: ./be5-consumer
-    restart: unless-stopped
+    restart: always
     command: 
       - /bin/sh 
       - -c 
       - | 
         /app/wait.sh rabbitmq:5672 
         python /app/consumer.py
+    env_file:
+      - ./be5-consumer/.env
 
   pgdb:
     image: ghusta/postgres-world-db:2.10
@@ -61,6 +63,7 @@ services:
 
   rabbitmq:
     image: bitnami/rabbitmq
+    restart: always
 
 
   otel-collector:
