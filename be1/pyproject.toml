@@ -7,10 +7,11 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-opentelemetry-distro = "^0.37b0"
+opentelemetry-distro = "^0.41b0"
 opentelemetry-exporter-otlp = "^1.16.0"
 fastapi = "0.90.1"
-prometheus-fastapi-instrumentator = "^5.9.1"
+prometheus-fastapi-instrumentator = "^6.1.0"
+opentelemetry-instrumentation = "^0.41b0"
 
 
 [build-system]

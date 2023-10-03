@@ -1,0 +1,77 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: demo
+spec:
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.80.0
+  config: |
+    receivers:
+      jaeger:
+        protocols:
+          thrift_http:
+            endpoint: "0.0.0.0:14278"
+      otlp:
+        protocols:
+          grpc:
+          http:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'fastapi-service'
+              scrape_interval: 100ms
+              static_configs:
+                - targets: ['fastapi-service:8080']
+            - job_name: 'fastapi-service-2'
+              scrape_interval: 100ms
+              static_configs:
+                - targets: ['fastapi-2-service:8081']
+            - job_name: 'otel-collector'
+              scrape_interval: 5s
+              static_configs:
+                - targets: ['0.0.0.0:8888']
+            - job_name: k8s
+              kubernetes_sd_configs:
+              - role: pod
+              relabel_configs:
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                regex: "true"
+                action: keep
+              metric_relabel_configs:
+              - source_labels: [__name__]
+                regex: "(request_duration_seconds.*|response_duration_seconds.*)"
+                action: keep
+
+    processors:
+      batch:
+        send_batch_size: 10000
+        timeout: 10s
+      # spanmetrics:
+      #   metrics_exporter: prometheus
+    connectors:
+      spanmetrics:
+
+    exporters:
+      # NOTE: Prior to v0.86.0 use `logging` instead of `debug`.
+      logging:
+        verbosity: detailed
+      otlp/jaeger:
+        endpoint: jaeger-service:4317
+        tls:
+          insecure: true
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+
+    service:
+      telemetry:
+        logs:
+          level: "debug"
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [batch]
+          exporters: [spanmetrics, otlp/jaeger]
+        # The exporter name in this pipeline must match the spanmetrics.metrics_exporter name.
+        # The receiver is just a dummy and never used; added to pass validation requiring at least one receiver in a pipeline.
+        metrics/spanmetrics:
+          receivers: [spanmetrics, prometheus]
+          exporters: [prometheus]

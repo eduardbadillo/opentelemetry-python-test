@@ -2,7 +2,7 @@ from os import getenv
 
 import requests
 from fastapi import FastAPI
-from opentelemetry import trace
+from opentelemetry import trace, metrics
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -22,6 +22,23 @@ from opentelemetry.sdk.resources import Resource
 import aiohttp
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 import asyncio
+
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import (
+    ConsoleMetricExporter,
+    PeriodicExportingMetricReader,
+)
+
+metric_reader = PeriodicExportingMetricReader(ConsoleMetricExporter())
+provider = MeterProvider(metric_readers=[metric_reader])
+
+# Sets the global default meter provider
+metrics.set_meter_provider(provider)
+
+# Creates a meter from the global meter provider
+meter = metrics.get_meter("api-gw.endpoint.root")
+work_counter = meter.create_counter("request.counter", unit="1", description="Counts the amount of requests done")
+# exception_counter = meter.create_counter(name="exceptions", description="number of exceptions caught", value_type=int)
 
 logger_provider = LoggerProvider(
     resource=Resource.create(
@@ -55,6 +72,7 @@ async def startup():
 @app.get("/")
 def read_root():
     logging.debug("Start API GW request")
+    work_counter.add(1, {"request.type": "http root"})
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("foo"):
         # Do something
