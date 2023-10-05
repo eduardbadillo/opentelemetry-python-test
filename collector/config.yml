@@ -2,6 +2,7 @@ receivers:
   otlp:
     protocols:
       grpc:
+      http:
 exporters:
   logging:
     verbosity: detailed
@@ -11,6 +12,10 @@ exporters:
       insecure: true
   prometheus:
     endpoint: "0.0.0.0:8889"
+  otlp/uptrace:
+    endpoint: uptrace:14317
+    tls: { insecure: true }
+    headers: { 'uptrace-dsn': 'http://project1_secret_token@localhost:14317/1' }
 processors:
   batch:
 service:
@@ -18,12 +23,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger]
+      exporters: [otlp/jaeger, otlp/uptrace]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [prometheus]
+      exporters: [prometheus, otlp/uptrace]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [otlp/uptrace]

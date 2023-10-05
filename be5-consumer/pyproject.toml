@@ -9,11 +9,13 @@ packages = [{include = "be5_consumer"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 aio-pika = "^9.0.4"
-opentelemetry-instrumentation-aio-pika = "^0.37b0"
-opentelemetry-api = "^1.16.0"
-opentelemetry-sdk = "^1.16.0"
-opentelemetry-instrumentation = "^0.37b0"
-opentelemetry-exporter-otlp = "^1.16.0"
+opentelemetry-instrumentation-aio-pika = "^0.41b0"
+opentelemetry-api = "^1.20.0"
+opentelemetry-sdk = "^1.20.0"
+opentelemetry-instrumentation = "^0.41b0"
+opentelemetry-exporter-otlp = "^1.20.0"
+fastapi = "0.90.1"
+prometheus-fastapi-instrumentator = "^6.1.0"
 
 
 [build-system]

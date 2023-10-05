@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-configmap
+data:
+  jaeger-ui.json: |
+    {
+      "monitor": {
+        "menuEnabled": true
+      },
+      "dependencies": {
+        "menuEnabled": true
+      }
+    }
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: jaeger
+  ports:
+    - protocol: TCP
+      port: 16686
+      targetPort: 16686
+      name: jaeger-ui
+    - protocol: TCP
+      port: 4317
+      targetPort: 4317
+      name: jaeger-otel
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-deployment
+  namespace: default
+  labels:
+    app: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:1.49
+        args: ["--query.ui-config", "/etc/jaeger/jaeger-ui.json"]
+        env:
+          - name: COLLECTOR_OTLP_ENABLED
+            value: "true"
+          - name: METRICS_STORAGE_TYPE
+            value: prometheus
+          - name: PROMETHEUS_SERVER_URL
+            value: http://prometheus-service:9090
+          - name: PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR
+            value: "true"
+        ports:
+        - containerPort: 16686
+        - containerPort: 4317
+        volumeMounts:
+        - name: config
+          mountPath: /etc/jaeger/jaeger-ui.json
+          subPath: jaeger-ui.json
+      volumes:
+      - name: config
+        configMap:
+          name: jaeger-configmap
+          items:
+          - key: "jaeger-ui.json"
+            path: "jaeger-ui.json"
