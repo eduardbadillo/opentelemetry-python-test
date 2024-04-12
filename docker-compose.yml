@@ -1,59 +1,69 @@
 version: "3.9"
 services:
-  api-gw:
-    build: ./api-gw
-    command: /start-reload.sh
-    volumes:
-      - ./api-gw/start-reload.sh:/start-reload.sh
-      - ./api-gw/app:/app/app
-    env_file:
-      - ./api-gw/.env
-    ports:
-      - "8000:8000"
+  # api-gw:
+  #   build: ./api-gw
+  #   command: /start-reload.sh
+  #   volumes:
+  #     - ./api-gw/start-reload.sh:/start-reload.sh
+  #     - ./api-gw/app:/app/app
+  #   env_file:
+  #     - ./api-gw/.env
+  #   ports:
+  #     - "8000:8000"
 
-  be1:
-    build: ./be1
-    command: /start-reload.sh
-    volumes:
-      - ./be1/start-reload.sh:/start-reload.sh
-    env_file:
-      - ./be1/.env
+  # be1:
+  #   build: ./be1
+  #   command: /start-reload.sh
+  #   volumes:
+  #     - ./be1/start-reload.sh:/start-reload.sh
+  #   env_file:
+  #     - ./be1/.env
 
-  be2:
-    build: ./be2
-    command: /start-reload.sh
-    volumes:
-      - ./be2/start-reload.sh:/start-reload.sh
-    env_file:
-      - ./be2/.env
+  # be2:
+  #   build: ./be2
+  #   command: /start-reload.sh
+  #   volumes:
+  #     - ./be2/start-reload.sh:/start-reload.sh
+  #   env_file:
+  #     - ./be2/.env
 
-  be3:
-    build: ./be3
-    command: /start-reload.sh
-    volumes:
-      - ./be3/start-reload.sh:/start-reload.sh
-    env_file:
-      - ./be3/.env
+  # be3:
+  #   build: ./be3
+  #   command: /start-reload.sh
+  #   volumes:
+  #     - ./be3/start-reload.sh:/start-reload.sh
+  #   env_file:
+  #     - ./be3/.env
 
-  be4:
-    build: ./be4
-    command: /start-reload.sh
-    volumes:
-      - ./be4/start-reload.sh:/start-reload.sh
-    env_file:
-      - ./be4/.env
+  # be4:
+  #   build: ./be4
+  #   command: /start-reload.sh
+  #   volumes:
+  #     - ./be4/start-reload.sh:/start-reload.sh
+  #   env_file:
+  #     - ./be4/.env
 
-  be5-consumer:
-    build: ./be5-consumer
-    restart: always
+  # be5-consumer:
+  #   build: ./be5-consumer
+  #   restart: always
+  #   command: 
+  #     - /bin/sh 
+  #     - -c 
+  #     - | 
+  #       /app/wait.sh rabbitmq:5672 
+  #       python /app/consumer.py
+  #   env_file:
+  #     - ./be5-consumer/.env
+  demo-script:
+    build: ./demo-script
     command: 
       - /bin/sh 
       - -c 
       - | 
-        /app/wait.sh rabbitmq:5672 
-        python /app/consumer.py
+        /wait.sh pgdb:5432 
+        python /main.py
     env_file:
-      - ./be5-consumer/.env
+      - ./demo-script/.env
 
   pgdb:
     image: ghusta/postgres-world-db:2.10
@@ -61,10 +71,9 @@ services:
     # user : world
     # password : world123
 
-  rabbitmq:
-    image: bitnami/rabbitmq
-    restart: always
-
+  # rabbitmq:
+  #   image: bitnami/rabbitmq
+  #   restart: always
 
   otel-collector:
     image: otel/opentelemetry-collector
@@ -84,38 +93,38 @@ services:
   #   volumes:
   #     - ./prometheus/config.yml:/etc/prometheus/prometheus.yml
 
-  clickhouse:
-    image: clickhouse/clickhouse-server:23.4
-    restart: on-failure
-    environment:
-      CLICKHOUSE_DB: uptrace
-    healthcheck:
-      test: ['CMD', 'wget', '--spider', '-q', 'localhost:8123/ping']
-      interval: 1s
-      timeout: 1s
-      retries: 30
+  # clickhouse:
+  #   image: clickhouse/clickhouse-server:23.4
+  #   restart: on-failure
+  #   environment:
+  #     CLICKHOUSE_DB: uptrace
+  #   healthcheck:
+  #     test: ['CMD', 'wget', '--spider', '-q', 'localhost:8123/ping']
+  #     interval: 1s
+  #     timeout: 1s
+  #     retries: 30
 
-  postgres:
-    image: postgres:15-alpine
-    restart: on-failure
-    environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_USER: uptrace
-      POSTGRES_PASSWORD: uptrace
-      POSTGRES_DB: uptrace
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U uptrace -d uptrace']
-      interval: 1s
-      timeout: 1s
-      retries: 30
+  # postgres:
+  #   image: postgres:15-alpine
+  #   restart: on-failure
+  #   environment:
+  #     PGDATA: /var/lib/postgresql/data/pgdata
+  #     POSTGRES_USER: uptrace
+  #     POSTGRES_PASSWORD: uptrace
+  #     POSTGRES_DB: uptrace
+  #   healthcheck:
+  #     test: ['CMD-SHELL', 'pg_isready -U uptrace -d uptrace']
+  #     interval: 1s
+  #     timeout: 1s
+  #     retries: 30
 
-  uptrace:
-    image: 'uptrace/uptrace:1.5.6'
-    #image: 'uptrace/uptrace-dev:latest'
-    restart: on-failure
-    volumes:
-      - ./uptrace/uptrace.yml:/etc/uptrace/uptrace.yml
-    #environment:
-    #  - DEBUG=2
-    ports:
-      - '14318:14318'
+  # uptrace:
+  #   image: 'uptrace/uptrace:1.5.6'
+  #   #image: 'uptrace/uptrace-dev:latest'
+  #   restart: on-failure
+  #   volumes:
+  #     - ./uptrace/uptrace.yml:/etc/uptrace/uptrace.yml
+  #   #environment:
+  #   #  - DEBUG=2
+  #   ports:
+  #     - '14318:14318'
